@@ -316,7 +316,6 @@ public class MyAccessibilityService extends AccessibilityService {
         return false;
     }
 
-
     private boolean clickText(AccessibilityNodeInfo root,String text){
 
         List<AccessibilityNodeInfo> nodes=
