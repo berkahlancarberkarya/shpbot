@@ -70,6 +70,12 @@ public class MainActivity extends AppCompatActivity {
         // TOMBOL TEST PUBLISH
         btnPublishNow.setOnClickListener(v->{
 
+            if(MyAccessibilityService.instance != null){
+                MyAccessibilityService.instance.taskRunning = true;
+            }
+
+            android.util.Log.d("SHPBOT","TEST TASK STARTED");
+
             PublishReceiver.restartShopee(this);
 
         });

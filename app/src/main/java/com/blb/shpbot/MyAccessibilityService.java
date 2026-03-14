@@ -27,6 +27,8 @@ public class MyAccessibilityService extends AccessibilityService {
     public boolean botPaused = false;
     boolean lastEnabledState = true;
 
+    public boolean taskRunning = false;
+
 
     Handler handler=new Handler();
 
@@ -81,6 +83,8 @@ public class MyAccessibilityService extends AccessibilityService {
         }
 
         if(!enabled) return;
+
+        if(!taskRunning) return;
 
         if(event==null) return;
 
@@ -238,8 +242,9 @@ public class MyAccessibilityService extends AccessibilityService {
             }
 
             */
+            taskRunning = false;
 
-
+            Log.d(TAG,"TASK SELESAI - MENUNGGU JADWAL BERIKUTNYA");
         }
 
 
@@ -266,23 +271,19 @@ public class MyAccessibilityService extends AccessibilityService {
         // =========================
         if(page == -1){
 
-            handler.postDelayed(() -> {
+            AccessibilityNodeInfo root2 = getRootInActiveWindow();
 
-                AccessibilityNodeInfo root2 = getRootInActiveWindow();
+            if(root2 != null){
 
-                if(root2 != null){
+                int pageRetry = detectPage(root2);
 
-                    int pageRetry = detectPage(root2);
+                Log.d(TAG,"Retry detect halaman → "+pageRetry);
 
-                    if(pageRetry != -1){
-
-                        Log.d(TAG,"Retry detect halaman → "+pageRetry);
-
-                    }
-
+                if(pageRetry != -1){
+                    page = pageRetry;
                 }
 
-            },800);
+            }
 
         }
 

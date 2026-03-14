@@ -70,6 +70,7 @@ public class PublishReceiver extends BroadcastReceiver {
             if(MyAccessibilityService.instance != null){
 
                 MyAccessibilityService.instance.botPaused = true;
+                MyAccessibilityService.instance.taskRunning = true;
 
                 Log.d(TAG,"CALL restartShopee service");
 
