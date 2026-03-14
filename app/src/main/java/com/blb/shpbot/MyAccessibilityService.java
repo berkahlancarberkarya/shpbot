@@ -110,10 +110,7 @@ public class MyAccessibilityService extends AccessibilityService {
         if(page == 0){
 
             Log.d(TAG,"PAGE HOME");
-
-            if(ready()){
-                clickText(root,"Live & Video");
-            }
+            clickText(root,"Live & Video");
 
         }
 
@@ -234,16 +231,12 @@ public class MyAccessibilityService extends AccessibilityService {
 
             Log.d(TAG,"PAGE PUBLISH sementara berhasil");
             /*
+            if(clickText(root,"Posting") || clickText(root,"Publish")){
 
-            if(ready()){
-
-                if(clickText(root,"Posting") || clickText(root,"Publish")){
-
-                    Log.d(TAG,"Klik Posting");
-
-                }
+                Log.d(TAG,"Klik Posting");
 
             }
+
             */
 
 
@@ -323,17 +316,6 @@ public class MyAccessibilityService extends AccessibilityService {
         return false;
     }
 
-    private boolean ready(){
-
-        long now=System.currentTimeMillis();
-
-        if(now-lastAction<1500) return false;
-
-        lastAction=now;
-
-        return true;
-
-    }
 
     private boolean clickText(AccessibilityNodeInfo root,String text){
 
