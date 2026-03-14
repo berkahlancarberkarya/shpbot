@@ -1,0 +1,9 @@
+<resources>
+
+    <string name="app_name">SHPBOT</string>
+
+    <string name="accessibility_desc">
+Shopee Draft Auto Publisher
+</string>
+
+</resources>
