@@ -63,6 +63,7 @@ public class MyAccessibilityService extends AccessibilityService {
 
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event){
+
         SharedPreferences prefs =
                 getSharedPreferences("bot",MODE_PRIVATE);
 
@@ -77,7 +78,6 @@ public class MyAccessibilityService extends AccessibilityService {
             }
 
             lastEnabledState = enabled;
-
         }
 
         if(!enabled) return;
@@ -90,16 +90,187 @@ public class MyAccessibilityService extends AccessibilityService {
 
         if(!waitUI()) return;
 
-        AccessibilityNodeInfo root=getRootInActiveWindow();
+        AccessibilityNodeInfo root = getRootInActiveWindow();
 
         if(root==null) return;
 
         Log.d(TAG,"ROOT HASH : "+root.hashCode());
 
+
+
         int page = detectPage(root);
 
+        Log.d(TAG,"PAGE : "+page);
 
 
+
+        // =========================
+        // HALAMAN HOME
+        // =========================
+        if(page == 0){
+
+            Log.d(TAG,"PAGE HOME");
+
+            if(ready()){
+                clickText(root,"Live & Video");
+            }
+
+        }
+
+
+
+        // =========================
+        // HALAMAN LIVE VIDEO
+        // =========================
+        else if(page == 1){
+
+            Log.d(TAG,"PAGE LIVE VIDEO");
+            AccessibilityNodeInfo root2 = getFreshRoot();
+            if(root2 != null){
+
+                dumpText(root2);
+
+                if(clickCreateIcon(root2)){
+
+                    Log.d(TAG,"Klik icon Create");
+
+                }else{
+
+                    Log.d(TAG,"Create belum ditemukan → retry");
+
+                    handler.postDelayed(() -> {
+
+                        AccessibilityNodeInfo rootRetry = getFreshRoot();
+
+                        if(rootRetry != null){
+
+                            dumpText(rootRetry);
+
+                            clickCreateIcon(rootRetry);
+
+                        }
+
+                    },400);
+
+                }
+
+            }
+
+        }
+
+
+
+        // =========================
+        // HALAMAN CAMERA / GALERI
+        // =========================
+        else if(page == 2){
+
+            Log.d(TAG,"PAGE CAMERA");
+
+            swipeUp();
+            Log.d(TAG,"swipe");
+            handler.postDelayed(() -> {
+
+                AccessibilityNodeInfo root2 = getRootInActiveWindow();
+
+                if(root2 != null){
+
+                    if(clickText(root2,"Draf")){
+
+                        Log.d(TAG,"Klik:Draf");
+
+                    }
+
+                }
+
+            },500);
+
+        }
+
+
+
+        // =========================
+        // HALAMAN DRAFT
+        // =========================
+        else if(page == 4){
+
+            Log.d(TAG,"PAGE DRAFT");
+            AccessibilityNodeInfo root2 = getRootInActiveWindow();
+
+            if(root2 != null){
+
+                if(clickFirstVideo(root2)){
+
+                    Log.d(TAG,"Video pertama diklik");
+
+                }
+
+            }
+
+        }
+
+
+
+        // =========================
+        // HALAMAN EDITOR
+        // =========================
+        else if(page == 5){
+
+            Log.d(TAG,"PAGE EDITOR");
+            if(clickText(root,"Next") || clickText(root,"Lanjut")){
+
+                Log.d(TAG,"Klik Next / Lanjut");
+
+            }
+
+        }
+
+
+
+        // =========================
+        // HALAMAN PUBLISH
+        // =========================
+        else if(page == 600){
+
+            Log.d(TAG,"PAGE PUBLISH sementara berhasil");
+            /*
+
+            if(ready()){
+
+                if(clickText(root,"Posting") || clickText(root,"Publish")){
+
+                    Log.d(TAG,"Klik Posting");
+
+                }
+
+            }
+            */
+
+
+        }
+
+
+        /*
+        // =========================
+        // CEK HASIL PUBLISH
+        // =========================
+        if(
+                findText(root,"berhasil") ||
+                        findText(root,"diposting") ||
+                        findText(root,"posted") ||
+                        findText(root,"success")
+        ){
+
+            Log.d(TAG,"Publish BERHASIL");
+
+        }
+        */
+
+
+
+        // =========================
+        // RETRY DETECT PAGE
+        // =========================
         if(page == -1){
 
             handler.postDelayed(() -> {
@@ -110,32 +281,9 @@ public class MyAccessibilityService extends AccessibilityService {
 
                     int pageRetry = detectPage(root2);
 
-                    if(pageRetry != -1 && pageRetry > STEP){
+                    if(pageRetry != -1){
 
-                        Log.d(TAG,"Retry detect halaman → STEP "+pageRetry);
-
-                        STEP = pageRetry;
-                        lastAction = 0;
-
-                        // paksa lanjut proses STEP berikutnya
-                        handler.postDelayed(() -> {
-
-                            AccessibilityNodeInfo root3 = getRootInActiveWindow();
-
-                            if(root3 != null){
-
-                                Log.d(TAG,"Lanjut proses setelah retry");
-
-                                // jalankan ulang logic STEP
-                                onAccessibilityEvent(
-                                        AccessibilityEvent.obtain(
-                                                AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED
-                                        )
-                                );
-
-                            }
-
-                        },200);
+                        Log.d(TAG,"Retry detect halaman → "+pageRetry);
 
                     }
 
@@ -144,253 +292,6 @@ public class MyAccessibilityService extends AccessibilityService {
             },800);
 
         }
-        else{
-
-            if(page > STEP){
-
-                Log.d(TAG,"Deteksi halaman → STEP "+page);
-
-                STEP = page;
-                lastAction = 0;
-
-            }
-
-        }
-
-        boolean canAction = ready();
-
-        Log.d(TAG,"STEP : "+STEP);
-
-
-
-        if(STEP==0){
-
-            Log.d(TAG,"STEP 0 : Klik Live & Video");
-
-            if(canAction && clickText(root,"Live & Video")){
-
-                Log.d(TAG,"Live & Video diklik → tunggu halaman berikutnya");
-
-            }
-
-        }
-
-        else if(STEP==1){
-
-            Log.d(TAG,"STEP 1 : Cari icon Create");
-
-            if(canAction){
-
-                AccessibilityNodeInfo root2 = getFreshRoot();
-
-                if(root2 != null){
-                    dumpText(root2);
-
-                    if(clickCreateIcon(root2)){
-
-                        Log.d(TAG,"Klik icon Create");
-
-                    }else{
-
-                        Log.d(TAG,"Create belum ditemukan → ambil snapshot ulang");
-
-                        handler.postDelayed(() -> {
-
-                            AccessibilityNodeInfo rootRetry = getFreshRoot();
-
-                            if(rootRetry != null){
-                                dumpText(rootRetry);
-
-                                if(clickCreateIcon(rootRetry)){
-                                    Log.d(TAG,"Klik icon Create (retry)");
-                                }
-
-                            }
-
-                        },400);
-
-                    }
-
-                }
-
-            }
-
-        }
-
-        else if(STEP==2){
-
-            Log.d(TAG,"STEP 2 : Swipe");
-
-            if(canAction){
-
-                swipeUp();
-
-                AccessibilityNodeInfo root2 = getRootInActiveWindow();
-
-                if(root2 != null){
-
-                    if(clickText(root2,"Draf")){
-
-                        Log.d(TAG,"Klik:Draf → menuju STEP 3");
-
-                        STEP = 3;
-                        lastAction = 0;
-
-                    }
-
-                }
-
-            }
-
-        }
-
-
-
-        else if(STEP==3){
-
-            Log.d(TAG,"STEP 3 : menunggu halaman Draft");
-
-            if(canAction){
-
-                AccessibilityNodeInfo root2 = getRootInActiveWindow();
-
-                if(root2 != null){
-
-                    int pageNow = detectPage(root2);
-
-                    if(pageNow == 3){
-
-                        Log.d(TAG,"Halaman Draft siap → STEP 4");
-
-                        STEP = 4;
-                        lastAction = 0;
-
-                    }else{
-
-                        Log.d(TAG,"Draft belum siap");
-
-                    }
-
-                }
-
-            }
-
-        }
-
-        else if(STEP==4){
-
-            Log.d(TAG,"STEP 4 : Klik video pertama");
-
-            if(canAction){
-
-                AccessibilityNodeInfo root2 = getRootInActiveWindow();
-
-                if(root2 != null){
-
-                    if(clickFirstVideo(root2)){
-
-                        Log.d(TAG,"Video pertama diklik");
-
-                        STEP = 5;
-                        lastAction = 0;
-
-                    }
-
-                }
-
-            }
-
-        }
-
-
-        else if(STEP==5){
-
-            Log.d(TAG,"STEP 5 : Klik Next");
-
-            if(clickText(root,"Next") || clickText(root,"Lanjut")){
-
-                Log.d(TAG,"Next ditemukan");
-
-
-
-            }
-            else{
-
-                Log.d(TAG,"Next tidak ditemukan → ulangi STEP 4");
-
-                handler.postDelayed(() -> {
-
-                    STEP = 4;
-
-                },1500);
-
-                STEP = 50;
-
-            }
-
-        }
-
-        else if(STEP==50){
-
-            Log.d(TAG,"Menunggu retry klik video");
-
-        }
-
-        else if(STEP==40){
-
-            Log.d(TAG,"Menunggu editor video load");
-
-        }
-
-        else if(STEP==41){
-
-            Log.d(TAG,"Menunggu klik video selesai");
-
-        }
-        /*
-
-        else if(STEP==6){
-
-            Log.d(TAG,"STEP 6 : Klik Publish");
-
-            if(clickText(root,"Publish") || clickText(root,"Posting")){
-
-                Log.d(TAG,"Publish diklik");
-
-                STEP=70;
-
-            }
-
-        }
-        */
-
-        else if(STEP==70){
-
-            Log.d(TAG,"STEP 7 : Menunggu hasil publish");
-
-            if(
-                    findText(root,"berhasil") ||
-                            findText(root,"diposting") ||
-                            findText(root,"posted") ||
-                            findText(root,"success")
-            ){
-
-                Log.d(TAG,"Publish BERHASIL");
-
-                STEP=8;
-
-            }
-
-        }
-
-        else if(STEP==8){
-
-            Log.d(TAG,"STEP 8 : Publish selesai");
-
-            STEP=0;
-
-        }
-
 
     }
 
